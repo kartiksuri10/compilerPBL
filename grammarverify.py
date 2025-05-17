@@ -19,7 +19,11 @@ def parse_grammar(grammar_lines):
             print(f"No valid production rules on the right-hand side for: {left}")
             return None
 
-        grammar[left] = productions
+        if left not in grammar:
+            grammar[left] = []
+        grammar[left].extend(productions)
+
+
         non_terminals.add(left)
 
     return grammar, non_terminals
@@ -29,7 +33,7 @@ def find_undefined_non_terminals(grammar, defined_non_terminals):
     used_non_terminals = set()
     for productions in grammar.values():
         for prod in productions:
-            for symbol in re.findall(r'[A-Z][A-Za-z0-9]*', prod):
+            for symbol in re.findall(r'[A-Z]', prod):
                 used_non_terminals.add(symbol)
     undefined = used_non_terminals - defined_non_terminals
     return undefined
@@ -59,10 +63,17 @@ def remove_immediate_left_recursion(grammar):
 
         if alpha:
             new_nt = nt + "'"
-            updated_grammar[nt] = [b + new_nt for b in beta]
+            # Handle beta (non-left-recursive) productions
+            if beta:
+                updated_grammar[nt] = [b + new_nt for b in beta]
+            else:
+                updated_grammar[nt] = [new_nt]  # No beta case
+
+            # Handle alpha (left-recursive) productions
             updated_grammar[new_nt] = [a + new_nt for a in alpha]
             updated_grammar[new_nt].append('ε')
         else:
+            # No left recursion
             updated_grammar[nt] = prods
 
     return updated_grammar
