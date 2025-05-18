@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import filedialog, messagebox
 from read_grammar_lalr_temp import ReadGrammar
-
+import csv
 
 class LALR1Parser:
     def __init__(self, grammar):
@@ -419,6 +419,21 @@ class LALR1Parser:
                 return True
 
             step += 1
+            def export_table_to_csv(self, filename="parsing_table.csv"):
+        '''
+        Export the parsing table to a CSV file
+        '''
+        if not hasattr(self, 'states_table'):
+            print("Parsing table not generated yet. Please view it first using option 2.")
+            return
+        try:
+            with open(filename, 'w', newline='') as csvfile:
+                writer = csv.writer(csvfile)
+                for row in self.states_table:
+                    writer.writerow(row)
+            print(f"Parsing table successfully exported to '{filename}'")
+        except Exception as e:
+            print(f"Failed to write to file: {e}")
 
 
 if __name__ == '__main__':
@@ -451,6 +466,7 @@ if __name__ == '__main__':
         print("2. View parsing table")
         print("3. Parse string")
         print("4. Exit")
+        print("5. Export parsing table to CSV")
 
         choice = input("Enter your choice (1-4): ")
 
@@ -470,5 +486,8 @@ if __name__ == '__main__':
         elif choice == '4':
             print("Exiting successfully.")
             break
+        elif choice == '5':
+            filename = input("Enterfilename to save (e.g., parsing_table.csv): ").strip()
+            if not filename: filename ="parsing_table.csv"lalr_parser.export_table_to_csv(filename)
         else:
             print("Invalid choice!")
