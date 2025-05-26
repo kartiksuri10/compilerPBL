@@ -252,61 +252,9 @@ class LR0Parser:
             for col in range(len(self.states_table[row])):
                 print(f"{self.states_table[row][col]:<10}", end='|')
             print()
-    # def parse_string(self, input_string):
-        # '''
-        # Use LR(0) parsing table to parse a string
-        # '''
-        # input_string += '#'
-        # states_stack = [0]
-        # symbol_stack = ['#']
-        # input_index = 0
-        # step = 1
-        # goto_state = ''
-
-        # while True:
-        #     current_state = states_stack[-1]
-        #     current_symbol = input_string[input_index]
-
-        #     action = self.get_action(current_state, current_symbol)
-
-        #     print(f"Step {step:<4} | State Stack: {str(states_stack):<20} | Symbol Stack: {str(symbol_stack):<30} | "
-        #           f"Input: {input_string[input_index:]:<15} | "
-        #           f"ACTION: {action:<10} | ", end="")
-
-        #     if not action:
-        #         return False
-
-        #     if action.startswith('S'):
-        #         next_state = int(action[1:])
-        #         states_stack.append(next_state)
-        #         symbol_stack += input_string[input_index]
-        #         input_index += 1
-        #         print("GOTO: ")
-
-        #     elif action.startswith('r'):
-        #         production_index = int(action[1:])
-        #         production = self.get_production_by_index(production_index)
-
-        #         for _ in range(len(production[1])):
-        #             states_stack.pop()
-        #             symbol_stack.pop()
-
-        #         goto_state = self.get_action(states_stack[-1], production[0])
-        #         states_stack.append(goto_state)
-        #         symbol_stack.append(production[0])
-        #         print(f"GOTO: {goto_state}")
-
-        #     elif action == 'acc':
-        #         print("GOTO: ")
-        #         return True
-
-        #     step += 1
     
     def parse_string(self, input_string):
-        # input_string += '#'
-        tokens = input_string.replace('=', ' = ').replace('+', ' + ').split()
-        tokens.append('#')
-
+        input_string += '#'
         states_stack = [0]
         symbol_stack = ['#']
         input_index = 0
@@ -314,7 +262,7 @@ class LR0Parser:
 
         while True:
             current_state = states_stack[-1]
-            current_symbol = tokens[input_index]
+            current_symbol = input_string[input_index]
 
             print(f"Step {step:<4} | State Stack: {str(states_stack):<20} | Symbol Stack: {str(symbol_stack):<30} | "
                 f"Input: {input_string[input_index:]:<15} | ", end="")
@@ -365,13 +313,6 @@ class LR0Parser:
 
             step += 1
     
-    # def get_action(self, state, symbol):
-    #     '''
-    #     Get ACTION based on state and symbol
-    #     '''
-    #     symbol_index = self.states_table[0].index(symbol)
-    #     state_index = int(state) + 1
-    #     return self.states_table[state_index][symbol_index]
 
     def get_action(self, state, symbol):
         try:
