@@ -1,4 +1,6 @@
-S -> A 1
-A -> A 0
-A -> 0
-A -> 1
+Stmt -> AssignStmt'
+Stmt' -> ; AssignStmt' | ε
+Assign -> id = Expr
+Expr -> TermExpr'
+Expr' ->  + TermExpr' | ε
+Term -> id

@@ -303,7 +303,10 @@ class LR0Parser:
         #     step += 1
     
     def parse_string(self, input_string):
-        input_string += '#'
+        # input_string += '#'
+        tokens = input_string.replace('=', ' = ').replace('+', ' + ').split()
+        tokens.append('#')
+
         states_stack = [0]
         symbol_stack = ['#']
         input_index = 0
@@ -311,7 +314,7 @@ class LR0Parser:
 
         while True:
             current_state = states_stack[-1]
-            current_symbol = input_string[input_index]
+            current_symbol = tokens[input_index]
 
             print(f"Step {step:<4} | State Stack: {str(states_stack):<20} | Symbol Stack: {str(symbol_stack):<30} | "
                 f"Input: {input_string[input_index:]:<15} | ", end="")
@@ -443,7 +446,7 @@ if __name__ == '__main__':
 
     if(grammar_file_path):
         grammar = ReadGrammar(grammar_file_path)
-        parser = LR0Parser(grammar)
+        lr0_parser = LR0Parser(grammar)
 
     while True:
         print("\nChoose an option:")
@@ -469,7 +472,7 @@ if __name__ == '__main__':
             else:
                 print(f'The input string: "{input_string}" does NOT belong to the grammar.')
         elif choice == '5':
-            parser.draw_dfa()
+            lr0_parser.draw_dfa()
         elif choice == '4':
             print("Exiting successfully.")
             break

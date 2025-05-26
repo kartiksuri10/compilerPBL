@@ -512,7 +512,7 @@ if __name__ == '__main__':
 
     try:
         grammar = ReadGrammar(grammar_file_path)
-        parser = SLR1Parser(grammar)
+        slr1_parser = SLR1Parser(grammar)
     except Exception as e:
         print(f"Error loading grammar: {e}")
         exit()
@@ -541,7 +541,7 @@ if __name__ == '__main__':
             else:
                 print(f'The input string: "{input_string}" does NOT belong to the grammar.')
         elif choice == '5':
-            parser.draw_dfa()
+            slr1_parser.draw_dfa()
         elif choice == '4':
             print("Exiting successfully.")
             break
