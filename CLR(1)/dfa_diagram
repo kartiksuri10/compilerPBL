@@ -1,0 +1,23 @@
+// Parser DFA
+digraph {
+	rankdir=LR size="10,8"
+	node [fontsize=10 shape=ellipse]
+	0 [label="I0\nS → • USER @ DOMAIN, #\nUSER → • x USER', @\n"]
+	1 [label="I1\nS → USER• @ DOMAIN, #\n"]
+	2 [label="I2\nUSER → x• USER', @\n"]
+	3 [label="I3\nDOMAIN → • SUBDOMAIN• TLD, #\nS → USER @• DOMAIN, #\nSUBDOMAIN → • x SUBDOMAIN', .\n"]
+	4 [label="I4\nUSER → x USER'•, @\n"]
+	5 [label="I5\nS → USER @ DOMAIN•, #\n"]
+	6 [label="I6\nDOMAIN → SUBDOMAIN•• TLD, #\n"]
+	7 [label="I7\nSUBDOMAIN → x• SUBDOMAIN', .\n"]
+	8 [label="I8\nSUBDOMAIN → x SUBDOMAIN'•, .\n"]
+	0 -> 1 [label=USER]
+	0 -> 2 [label=x]
+	1 -> 3 [label="@"]
+	2 -> 4 [label="USER'"]
+	3 -> 5 [label=DOMAIN]
+	3 -> 6 [label=SUBDOMAIN]
+	3 -> 7 [label=x]
+	6 -> 6 [label="."]
+	7 -> 8 [label="SUBDOMAIN'"]
+}

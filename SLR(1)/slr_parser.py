@@ -1,7 +1,6 @@
 import tkinter as tk
 from tkinter import filedialog, messagebox
 from read_grammar_slr_temp import ReadGrammar
-import csv
 
 class SLR1Parser:
     def __init__(self, grammar):
@@ -11,10 +10,12 @@ class SLR1Parser:
         self.compute_first_follow_sets()
         # Compute closures and transitions
         self.compute_closure_goto()
+        # Generate the parsing table during initialization
+        self.print_table()  # Ensures self.states_table is always created
 
     def compute_first_sets(self):
         '''
-        Compute FIRST sets for all symbols in the grammar
+        Compute FIRST sets for all symbols in the grammar 
         '''
         self.first = {}
         
@@ -159,7 +160,6 @@ class SLR1Parser:
         :param items: current set of items
         :return:
         '''
-
         closure_items = set(items)
         changed = True
 
@@ -194,7 +194,6 @@ class SLR1Parser:
         :param symbol: input symbol
         :return:
         '''
-
         goto_items = set()
 
         for item in items:
@@ -211,7 +210,6 @@ class SLR1Parser:
         Compute all closure and GOTO sets in the SLR(1) item collection
         :return:
         '''
-
         self.states = []
         self.transitions = {}
 
@@ -360,6 +358,7 @@ class SLR1Parser:
                 self.states_table[row][col] = cell_value
         
         # Print the table
+        print("SLR(1) Parsing Table:")
         for row in range(len(self.states_table)):
             for col in range(len(self.states_table[row])):
                 print(f"{self.states_table[row][col]:<10}", end='|')
@@ -427,6 +426,9 @@ class SLR1Parser:
             elif action.startswith('r'):
                 production_index = int(action[1:])
                 production = self.get_production_by_index(production_index)
+                if production[0] is None:  # Check if production exists
+                    print(f"Error: Invalid production index {production_index}")
+                    return False
                 lhs = production[0]
                 rhs_length = len(production[1])
                 
@@ -438,7 +440,7 @@ class SLR1Parser:
                 # Get new state from GOTO table
                 goto_state = self.get_action(states_stack[-1], lhs)
                 if not goto_state:
-                    print(f"No GOTO for state {states_stack[-1]} and symbol {lhs}")
+                    print(f"No GOTO for state {states_stack[-1]} and symbol wywo{lhs}")
                     return False
                 
                 states_stack.append(int(goto_state))
@@ -450,22 +452,39 @@ class SLR1Parser:
                 return True
 
             step += 1
-    def export_table_to_csv(self, filename="parsing_table.csv"):
-        '''
-        Export the parsing table to a CSV file
-        '''
-        if not hasattr(self, 'states_table'):
-            print("Parsing table not generated yet. Please view it first using option 2.")
-            return
-        try:
-            with open(filename, 'w', newline='') as csvfile:
-                writer = csv.writer(csvfile)
-                for row in self.states_table:
-                    writer.writerow(row)
-            print(f"Parsing table successfully exported to '{filename}'")
-        except Exception as e:
-            print(f"Failed to write to file: {e}")
 
+
+    def draw_dfa(self, output_file='dfa_diagram'):
+        """Generate and render the DFA diagram of parser states using Graphviz"""
+        from graphviz import Digraph
+        dot = Digraph(comment='Parser DFA')
+        dot.attr(rankdir='LR', size='10,8')
+        dot.attr('node', shape='ellipse', fontsize='10')
+
+        # Add states with item sets as labels
+        for i, state in enumerate(self.states):
+            label = f'I{i}\\n'
+            for item in sorted(state):
+                if len(item) == 2:
+                    lhs, rhs = item
+                    rhs_str = ' '.join(rhs).replace(' .', '•').replace('.', '•')
+                    label += f'{lhs} → {rhs_str}\\n'
+                elif len(item) == 3:
+                    lhs, rhs, lookahead = item
+                    rhs_str = ' '.join(rhs).replace(' .', '•').replace('.', '•')
+                    label += f'{lhs} → {rhs_str}, {lookahead}\\n'
+            dot.node(str(i), label)
+
+        for (from_state, symbol), to_state in self.transitions.items():
+            if isinstance(from_state, int):
+                dot.edge(str(from_state), str(to_state), label=symbol)
+            else:
+                from_index = self.states.index(from_state)
+                to_index = self.states.index(to_state)
+                dot.edge(str(from_index), str(to_index), label=symbol)
+
+        dot.render(output_file, format='pdf', view=True)
+        print(f"DFA diagram saved as {output_file}.pdf")
 
 if __name__ == '__main__':
     root = tk.Tk()
@@ -487,9 +506,16 @@ if __name__ == '__main__':
         filetypes=[("Text files", "*.txt"), ("All files", "*.*")]
     )
 
-    if(grammar_file_path):
+    if not grammar_file_path:
+        print("No file selected. Exiting.")
+        exit()
+
+    try:
         grammar = ReadGrammar(grammar_file_path)
-        slr1_parser = SLR1Parser(grammar)
+        parser = SLR1Parser(grammar)
+    except Exception as e:
+        print(f"Error loading grammar: {e}")
+        exit()
 
     while True:
         print("\nChoose an option:")
@@ -497,7 +523,7 @@ if __name__ == '__main__':
         print("2. View parsing table")
         print("3. Parse string")
         print("4. Exit")
-        print("5. Export parsing table to CSV")
+        print("5. Generate DFA diagram")
 
         choice = input("Enter your choice (1-4): ")
 
@@ -514,11 +540,10 @@ if __name__ == '__main__':
                 print(f'The input string: "{input_string}" belongs to the grammar.')
             else:
                 print(f'The input string: "{input_string}" does NOT belong to the grammar.')
+        elif choice == '5':
+            parser.draw_dfa()
         elif choice == '4':
             print("Exiting successfully.")
             break
-            elif choice == '5':
-                filename = input("Enterfilename to save (e.g., parsing_table.csv): ").strip()
-                if not filename: filename ="parsing_table.csv"lalr_parser.export_table_to_csv(filename)
         else:
             print("Invalid choice!")

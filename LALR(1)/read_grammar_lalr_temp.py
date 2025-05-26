@@ -19,44 +19,43 @@ class ReadGrammar(dict):
                 if left not in self:
                     self[left] = []
                 
-                # Split right-hand side properly, handling spaces
                 productions = right.split('|')
                 for prod in productions:
                     prod = prod.strip()
+                    if prod == 'ε':
+                        self[left].append(())
+                        continue
                     if prod:
-                        # Split into symbols, handling multi-character tokens
                         symbols = []
-                        current = ''
-                        for char in prod:
-                            if char == ' ':
-                                if current:
-                                    symbols.append(current)
-                                    current = ''
+                        prod_chars = prod
+                        i = 0
+                        while i < len(prod_chars):
+                            if prod_chars[i].isspace():
+                                i += 1
+                                continue
+                            non_terminal_match = re.match(r'[A-Z][A-Za-z0-9]*\'?', prod_chars[i:])
+                            if non_terminal_match:
+                                symbol = non_terminal_match.group(0)
+                                symbols.append(symbol)
+                                i += len(symbol)
                             else:
-                                current += char
-                        if current:
-                            symbols.append(current)
+                                symbol = prod_chars[i]
+                                symbols.append(symbol)
+                                i += 1
                         self[left].append(tuple(symbols))
 
     def add_augmented_production(self):
-        # Get the original start symbol of the grammar
         original_start_symbol = list(self.keys())[0]
-        # Create a new augmented start symbol
         new_start_symbol = 'S\''
-        # Create a new dictionary and add the augmented production
         new_dict = {new_start_symbol: [(original_start_symbol,)]}
-        # Merge the original grammar into the new dictionary
         new_dict.update(self)
-        # Replace the current dictionary with the new one
         self.clear()
         self.update(new_dict)
-        # Return the new start symbol
         return new_start_symbol
 
 
 if __name__ == '__main__':
-    # Example usage
-    grammar_file_path = 'grammar.txt'  # Replace with your grammar file path
+    grammar_file_path = 'grammar.txt'
     grammar = ReadGrammar(grammar_file_path)
     print("Grammar after parsing and augmentation:")
     print(grammar)

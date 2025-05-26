@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import filedialog, messagebox
-from LR0.read_grammar import ReadGrammar
-import csv
+from read_grammar_lr0_temp import ReadGrammar
+
 
 class LR0Parser:
     def __init__(self, grammar):
@@ -386,22 +386,40 @@ class LR0Parser:
                 if production_index == 0:
                     return left_symbol, production
                 production_index -= 1
-    def export_table_to_csv(self, filename="parsing_table.csv"):
-        '''
-        Export the parsing table to a CSV file
-        '''
-        if not hasattr(self, 'states_table'):
-            print("Parsing table not generated yet. Please view it first using option 2.")
-            return
-        try:
-            with open(filename, 'w', newline='') as csvfile:
-                writer = csv.writer(csvfile)
-                for row in self.states_table:
-                    writer.writerow(row)
-            print(f"Parsing table successfully exported to '{filename}'")
-        except Exception as e:
-            print(f"Failed to write to file: {e}")
 
+
+
+    def draw_dfa(self, output_file='dfa_diagram'):
+        """Generate and render the DFA diagram of parser states using Graphviz"""
+        from graphviz import Digraph
+        dot = Digraph(comment='Parser DFA')
+        dot.attr(rankdir='LR', size='10,8')
+        dot.attr('node', shape='ellipse', fontsize='10')
+
+        # Add states with item sets as labels
+        for i, state in enumerate(self.states):
+            label = f'I{i}\\n'
+            for item in sorted(state):
+                if len(item) == 2:
+                    lhs, rhs = item
+                    rhs_str = ' '.join(rhs).replace(' .', '•').replace('.', '•')
+                    label += f'{lhs} → {rhs_str}\\n'
+                elif len(item) == 3:
+                    lhs, rhs, lookahead = item
+                    rhs_str = ' '.join(rhs).replace(' .', '•').replace('.', '•')
+                    label += f'{lhs} → {rhs_str}, {lookahead}\\n'
+            dot.node(str(i), label)
+
+        for (from_state, symbol), to_state in self.transitions.items():
+            if isinstance(from_state, int):
+                dot.edge(str(from_state), str(to_state), label=symbol)
+            else:
+                from_index = self.states.index(from_state)
+                to_index = self.states.index(to_state)
+                dot.edge(str(from_index), str(to_index), label=symbol)
+
+        dot.render(output_file, format='pdf', view=True)
+        print(f"DFA diagram saved as {output_file}.pdf")
 
 if __name__ == '__main__':
     root = tk.Tk()
@@ -425,7 +443,7 @@ if __name__ == '__main__':
 
     if(grammar_file_path):
         grammar = ReadGrammar(grammar_file_path)
-        lr0_parser = LR0Parser(grammar)
+        parser = LR0Parser(grammar)
 
     while True:
         print("\nChoose an option:")
@@ -433,7 +451,7 @@ if __name__ == '__main__':
         print("2. View parsing table")
         print("3. Parse string")
         print("4. Exit")
-        print("5. Export parsing table to CSV")
+        print("5. Generate DFA diagram")
 
         choice = input("Enter your choice (1-4): ")
 
@@ -450,11 +468,10 @@ if __name__ == '__main__':
                 print(f'The input string: "{input_string}" belongs to the grammar.')
             else:
                 print(f'The input string: "{input_string}" does NOT belong to the grammar.')
+        elif choice == '5':
+            parser.draw_dfa()
         elif choice == '4':
             print("Exiting successfully.")
             break
-            elif choice == '5':
-                filename = input("Enterfilename to save (e.g., parsing_table.csv): ").strip()
-                if not filename: filename ="parsing_table.csv"lalr_parser.export_table_to_csv(filename)
         else:
             print("Invalid choice!")

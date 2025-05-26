@@ -1,0 +1,18 @@
+// LALR(1) DFA
+digraph {
+	rankdir=LR size="10,8"
+	node [fontsize=10 shape=ellipse]
+	0 [label="I0\nA → • 0, 0\nA → • 0, 1\nA → • 1, 0\nA → • 1, 1\nA → • A 0, 0\nA → • A 0, 1\nS → • A 1, #\nS' → • S, #\n"]
+	1 [label="I1\nA → 1 •, 0\nA → 1 •, 1\n"]
+	2 [label="I2\nA → A • 0, 0\nA → A • 0, 1\nS → A • 1, #\n"]
+	3 [label="I3\nA → 0 •, 0\nA → 0 •, 1\n"]
+	4 [label="I4\nS' → S •, #\n"]
+	5 [label="I5\nS → A 1 •, #\n"]
+	6 [label="I6\nA → A 0 •, 0\nA → A 0 •, 1\n"]
+	0 -> 1 [label=1]
+	0 -> 2 [label=A]
+	0 -> 3 [label=0]
+	0 -> 4 [label=S]
+	2 -> 5 [label=1]
+	2 -> 6 [label=0]
+}

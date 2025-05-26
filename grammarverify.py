@@ -128,4 +128,3 @@ def grammar_verifier_interface():
 # Run the interface
 if __name__ == "__main__":
     grammar_verifier_interface()
-
